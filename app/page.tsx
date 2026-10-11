@@ -1,6 +1,7 @@
 import { PlusIcon } from "lucide-react"
 import { auth } from "@clerk/nextjs/server"
 
+import { BotDialog } from "@/components/bot-dialog"
 import { ChatAvatar } from "@/components/chat-avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,10 +29,12 @@ export default async function Page() {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button variant="secondary">
-          <PlusIcon data-icon="inline-start" />
-          Create a new bot
-        </Button>
+        <BotDialog>
+          <Button variant="secondary">
+            <PlusIcon data-icon="inline-start" />
+            Create a new bot
+          </Button>
+        </BotDialog>
       </EmptyContent>
     </Empty>
   )

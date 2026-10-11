@@ -1,5 +1,6 @@
 // Drizzle table definitions. Run `npm run db:push` after changing them.
 import { index, pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { createInsertSchema } from "drizzle-zod"
 import { nanoid } from "nanoid"
 
 export const bots = pgTable(
@@ -28,5 +29,18 @@ export const bots = pgTable(
   (t) => [index("bots_user_id_idx").on(t.userId)]
 )
 
-export type Bot = typeof bots.$inferSelect
-export type NewBot = typeof bots.$inferInsert
+// Fields a user may set when creating a bot. The owner comes from the session.
+export const botInsertSchema = createInsertSchema(bots, {
+  name: (s) =>
+    s
+      .trim()
+      .min(1, "Give your bot a name.")
+      .max(50, "Keep the name to 50 characters or fewer."),
+  job: (s) =>
+    s
+      .trim()
+      .min(1, "Give your bot a job.")
+      .max(100, "Keep the job to 100 characters or fewer."),
+  instructions: (s) =>
+    s.trim().max(4000, "Keep the instructions to 4000 characters or fewer."),
+}).pick({ name: true, avatar: true, job: true, instructions: true })

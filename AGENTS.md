@@ -18,6 +18,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Apply schema changes with `npm run db:push` (`drizzle-kit push`) only. Never generate or run migrations (`drizzle-kit generate`, `drizzle-kit migrate`) and never add migration files or scripts.
 - This is a development project. There is no backwards compatibility and the data is worthless. Prefer data loss: never backfill, migrate, or preserve existing rows, and never spend effort on keeping old data working. Every schema change means a clean slate.
 
+## Forms
+
+One zod schema per form, shared by the client form and the server action. Reference implementation: `db/schema.ts` (`botInsertSchema`), `action/bot.ts`, `components/bot-dialog.tsx`.
+
+- **Schema**: generate it in `db/schema.ts` with `createInsertSchema` from `drizzle-zod`, named `<table>InsertSchema`. Refine each text field with `.trim()`, and give every `.min()`/`.max()` a user-facing message. `.pick()` only the fields a user may set; ids, owner, and timestamps stay out.
+- **Server action**: `action/<entity>.ts` with `"use server"`. Get `userId` from `await auth.protect()`, re-parse the input with the same schema, store empty optional strings as `null`, then `revalidatePath`. Type the input as `z.input<typeof schema>`.
+- **Client form**: `react-hook-form` with `zodResolver(schema)`, letting the resolver infer the types. Render each field as `Controller` + shadcn `Field`/`FieldLabel`/`FieldError`, following the shadcn skill's `rules/forms.md`.
+- **Dialog forms**: the dialog takes its trigger as `children` and passes it to `DialogTrigger render`. Put the form in its own component inside `DialogContent` so each open starts fresh. Link the footer submit button with `form={id}` from `useId()`, show `Spinner` and disable it while `isSubmitting`, report the outcome with `toast.add` from `@/components/ui/toast`, and close on success.
+
 ## DiceBear
 
 Use DiceBear 10. Documentation: https://www.dicebear.com/llms.txt
